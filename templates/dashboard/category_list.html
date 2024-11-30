@@ -19,10 +19,17 @@
             {% for category in categories %}
             <tr>
                 <td>{{ forloop.counter }}</td>
-                <td>{{ category.name }}</td>
+                <td>{{ category.category_name }}</td>
                 <td>
                     <a href="{% url 'edit-category' category.id %}" class="btn btn-sm btn-warning">Edit</a>
-                    <a href="{% url 'delete-category' category.id %}" class="btn btn-sm btn-danger">Delete</a>
+                    <a 
+                    href="#" 
+                    class="btn btn-sm btn-danger" 
+                    onclick="confirmDelete('{{ category.id }}', '{{ category.category_name }}', '{% url 'delete-category' category.id %}')"
+                >
+                    Delete
+                </a>
+                
                 </td>
             </tr>
             {% empty %}

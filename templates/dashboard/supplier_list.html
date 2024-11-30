@@ -11,9 +11,9 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Name</th>
+                <th>Supplier Name</th>
                 <th>Email</th>
-                <th>Phone Number</th>
+                <th>Phone</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -26,8 +26,14 @@
                 <td>{{ supplier.phone_number }}</td>
                 <td>
                     <a href="{% url 'edit-supplier' supplier.id %}" class="btn btn-sm btn-warning">Edit</a>
-                    <a href="{% url 'delete-supplier' supplier.id %}" class="btn btn-sm btn-danger">Delete</a>
-                </td>
+                    <a 
+                    href="#" 
+                    class="btn btn-sm btn-danger" 
+                    onclick="confirmDelete('{{ supplier.id }}', '{{ supplier.name }}', '{% url 'delete-supplier' supplier.id %}')"
+                >
+                    Delete
+                </a>
+                                </td>
             </tr>
             {% empty %}
             <tr>

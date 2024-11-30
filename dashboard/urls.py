@@ -25,10 +25,13 @@ urlpatterns = [
     path('categories/', views.categories, name='dashboard-categories'),  # Category list
     path('categories/add/', views.add_category, name='add-category'),  # Add category
     path('categories/edit/<int:pk>/', views.edit_category, name='edit-category'),
+    path('categories/delete/<int:pk>/', views.delete_category, name='delete-category'),
 
     # Suppliers
     path('suppliers/', views.suppliers, name='dashboard-suppliers'),  # Supplier list
     path('suppliers/add/', views.add_supplier, name='add-supplier'),  # Add supplier
+    path('suppliers/edit/<int:pk>/', views.edit_supplier, name='edit-supplier'),
+    path('suppliers/delete/<int:pk>/', views.delete_supplier, name='delete-supplier'),
 
     # stock transactions
      path('stock-transactions/', views.stock_transaction_list, name='dashboard-stock-transactions'),

@@ -3,6 +3,29 @@
 <html lang="en">
 
 <head>
+<!-- Include SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function confirmDelete(itemId, itemName, deleteUrl) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you really want to delete "${itemName}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect to the delete view
+                window.location.href = deleteUrl;
+            }
+        });
+    }
+</script>
+
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
