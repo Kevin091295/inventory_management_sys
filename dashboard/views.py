@@ -125,24 +125,6 @@ def customer_detail(request, pk):
     return render(request, "dashboard/customers_detail.html", context)
 
 
-@login_required(login_url="user-login")
-def order(request):
-    order = Order.objects.all()
-    order_count = order.count()
-    customer = User.objects.filter(groups=2)
-    customer_count = customer.count()
-    product = Product.objects.all()
-    product_count = product.count()
-
-    context = {
-        "order": order,
-        "customer_count": customer_count,
-        "product_count": product_count,
-        "order_count": order_count,
-    }
-    return render(request, "dashboard/order.html", context)
-
-
 @login_required
 def stock_update_page(request):
     return render(request, "dashboard/update_stock.html")

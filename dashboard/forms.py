@@ -8,13 +8,6 @@ class ProductForm(forms.ModelForm):
         fields = '__all__'
 
 
-class OrderForm(forms.ModelForm):
-
-    class Meta:
-        model = Order
-        fields = ['name', 'order_quantity']
-
-
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
