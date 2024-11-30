@@ -1,0 +1,37 @@
+body {
+    background-color: #F8F9FA; /* Light background */
+    font-family: 'Roboto', sans-serif;
+}
+
+.navbar .nav-item.active .nav-link {
+    color: #FFC107; /* Amber or any accent color */
+    font-weight: bold;
+    border-bottom: 2px solid #FFC107; /* Optional underline for active state */
+}
+
+.navbar {
+    margin-bottom: 20px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    border-radius: 10px;
+    border: none;
+}
+
+.card h4, .card h3 {
+    margin: 0;
+}
+
+.table {
+    background-color: white;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.footer {
+    background-color: #343A40;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    margin-top: 30px;
+}
