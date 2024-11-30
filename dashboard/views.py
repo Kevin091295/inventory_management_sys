@@ -66,10 +66,26 @@ def add_product(request):
     return render(request, "dashboard/add_product.html", context)
 
 
-@login_required(login_url="user-login")
-def product_detail(request, pk):
-    context = {}
-    return render(request, "dashboard/products_detail.html", context)
+def edit_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect("dashboard-products")  # Redirect to the product list page
+    else:
+        form = ProductForm(instance=product)
+    return render(
+        request, "dashboard/edit_product.html", {"form": form, "product": product}
+    )
+
+
+def delete_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":  # Confirm delete
+        product.delete()
+        return redirect("dashboard-products")  # Redirect to the product list page
+    return render(request, "dashboard/confirm_delete.html", {"object": product})
 
 
 @login_required(login_url="user-login")
@@ -107,34 +123,6 @@ def customer_detail(request, pk):
         "order_count": order_count,
     }
     return render(request, "dashboard/customers_detail.html", context)
-
-
-@login_required(login_url="user-login")
-@allowed_users(allowed_roles=["Admin"])
-def product_edit(request, pk):
-    item = Product.objects.get(id=pk)
-    if request.method == "POST":
-        form = ProductForm(request.POST, instance=item)
-        if form.is_valid():
-            form.save()
-            return redirect("dashboard-products")
-    else:
-        form = ProductForm(instance=item)
-    context = {
-        "form": form,
-    }
-    return render(request, "dashboard/products_edit.html", context)
-
-
-@login_required(login_url="user-login")
-@allowed_users(allowed_roles=["Admin"])
-def product_delete(request, pk):
-    item = Product.objects.get(id=pk)
-    if request.method == "POST":
-        item.delete()
-        return redirect("dashboard-products")
-    context = {"item": item}
-    return render(request, "dashboard/products_delete.html", context)
 
 
 @login_required(login_url="user-login")

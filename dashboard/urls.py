@@ -5,21 +5,16 @@ from .models import Product, Supplier, Category
 urlpatterns = [
     path('index/', views.index, name='dashboard-index'),
 
-    
-    path('products/', views.products, name='dashboard-products'),  # Product list
-    path('products/add/', views.add_product, name='add-product'),  # Add product
-
-    path('products/delete/<int:pk>/', views.product_delete,
-         name='dashboard-products-delete'),
-    path('products/detail/<int:pk>/', views.product_detail,
-         name='dashboard-products-detail'),
-    path('products/edit/<int:pk>/', views.product_edit,
-         name='dashboard-products-edit'),
     path('customers/', views.customers, name='dashboard-customers'),
     path('customers/detial/<int:pk>/', views.customer_detail,
          name='dashboard-customer-detail'),
     path('order/', views.order, name='dashboard-order'),
 
+    # Products
+    path('products/', views.products, name='dashboard-products'),  # Product list
+    path('products/add/', views.add_product, name='add-product'),  # Add product
+    path('products/edit/<int:pk>/', views.edit_product, name='edit-product'),
+    path('products/delete/<int:pk>/', views.delete_product, name='delete-product'),
 
     # Categories
     path('categories/', views.categories, name='dashboard-categories'),  # Category list
