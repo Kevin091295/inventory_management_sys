@@ -53,14 +53,3 @@ class StockTransaction(models.Model):
     def __str__(self):
         return f'{self.transaction_type} - {self.product.name} ({self.quantity}) by {self.performed_by.username if self.performed_by else "Unknown"}'
 
-
-
-
-
-class Order(models.Model):
-    name = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
-    customer = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    order_quantity = models.PositiveIntegerField(null=True)
-
-    def __str__(self):
-        return f"{self.customer}-{self.name}"

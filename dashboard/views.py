@@ -1,12 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from .models import Product, Order, StockTransaction, Category, Supplier
-from .forms import ProductForm, OrderForm, CategoryForm, SupplierForm
+from .models import Product, StockTransaction, Category, Supplier
+from .forms import ProductForm, CategoryForm, SupplierForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .decorators import auth_users, allowed_users
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
 
 # Create your views here.
 
@@ -15,26 +14,12 @@ from django.http import JsonResponse
 def index(request):
     product = Product.objects.all()
     product_count = product.count()
-    order = Order.objects.all()
-    order_count = order.count()
     customer = User.objects.filter(groups=2)
     customer_count = customer.count()
 
-    if request.method == "POST":
-        form = OrderForm(request.POST)
-        if form.is_valid():
-            obj = form.save(commit=False)
-            obj.customer = request.user
-            obj.save()
-            return redirect("dashboard-index")
-    else:
-        form = OrderForm()
     context = {
-        "form": form,
-        "order": order,
         "product": product,
         "product_count": product_count,
-        "order_count": order_count,
         "customer_count": customer_count,
     }
     return render(request, "dashboard/index.html", context)
@@ -95,13 +80,10 @@ def customers(request):
     customer_count = customer.count()
     product = Product.objects.all()
     product_count = product.count()
-    order = Order.objects.all()
-    order_count = order.count()
     context = {
         "customer": customer,
         "customer_count": customer_count,
         "product_count": product_count,
-        "order_count": order_count,
     }
     return render(request, "dashboard/customers.html", context)
 
@@ -113,14 +95,11 @@ def customer_detail(request, pk):
     customer_count = customer.count()
     product = Product.objects.all()
     product_count = product.count()
-    order = Order.objects.all()
-    order_count = order.count()
     customers = User.objects.get(id=pk)
     context = {
         "customers": customers,
         "customer_count": customer_count,
         "product_count": product_count,
-        "order_count": order_count,
     }
     return render(request, "dashboard/customers_detail.html", context)
 
