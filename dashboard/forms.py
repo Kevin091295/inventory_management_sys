@@ -43,4 +43,16 @@ class SupplierForm(forms.ModelForm):
 class StockTransactionForm(forms.ModelForm):
     class Meta:
         model = StockTransaction
-        fields = ['product', 'quantity', 'transaction_type', 'remarks']  
+        fields = ['product', 'quantity', 'transaction_type', 'remarks'] 
+
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        product = cleaned_data.get('product')
+        quantity = cleaned_data.get('quantity')
+        transaction_type = cleaned_data.get('transaction_type')
+
+        if transaction_type == 'REMOVE' and product and quantity:
+            if product.stock_level < quantity:
+                raise forms.ValidationError(f"Cannot remove {quantity} units. Only {product.stock_level} units available in inventory.")
+        return cleaned_data

@@ -55,6 +55,12 @@ class StockTransaction(models.Model):
 
 
     def save(self, *args, **kwargs):
-        if not self.reference_number:
-            self.reference_number = f'TRX-{self.timestamp.strftime("%Y%m%d")}-{self.id or ""}'
+        if self.transaction_type == 'REMOVE':
+            if self.product.stock_level < self.quantity:
+                raise ValueError(f"Cannot remove {self.quantity} units. Only {self.product.stock_level} units available.")
+            self.product.stock_level -= self.quantity
+        elif self.transaction_type == 'ADD':
+            self.product.stock_level += self.quantity
+
+        self.product.save()  # Save the updated stock level
         super().save(*args, **kwargs)

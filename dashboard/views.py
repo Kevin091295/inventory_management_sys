@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .decorators import auth_users, allowed_users
 from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -159,8 +160,16 @@ def stock_transaction_list(request):
     context = {
         "transactions": transactions,  # Pass transactions to the template
     }
-    print("transactions", transactions)
+
     return render(request, "dashboard/stock_transaction_list.html", context)
+
+
+def get_stock_level(request, product_id):
+    try:
+        product = Product.objects.get(pk=product_id)
+        return JsonResponse({'stock_level': product.stock_level})
+    except Product.DoesNotExist:
+        return JsonResponse({'error': 'Product not found'}, status=404)
 
 
 def add_stock_transaction(request):
@@ -168,6 +177,8 @@ def add_stock_transaction(request):
         form = StockTransactionForm(request.POST)
         if form.is_valid():
             # Save the form but don't commit yet
+
+
             transaction = form.save(commit=False)
             # Set the performed_by field to the logged-in user
             transaction.performed_by = request.user
@@ -205,7 +216,7 @@ def categories(request):
     context = {
         "categories": categories,
     }
-    print("context", context)
+
     return render(request, "dashboard/category_list.html", context)
 
 

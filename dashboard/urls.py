@@ -29,6 +29,7 @@ urlpatterns = [
 
     # stock transactions
     path('stock-transactions/', views.stock_transaction_list, name='dashboard-stock-transactions'),
+    path('get-stock-level/<int:product_id>/', views.get_stock_level, name='get-stock-level'),
     path('stock-transactions/add/', views.add_stock_transaction, name='add-stock-transaction'),
     path('stock-transactions/edit/<int:pk>/', views.edit_stock_transaction, name='edit-stock-transaction'),
     path('stock-transactions/delete/<int:pk>/', views.delete_stock_transaction, name='delete-stock-transaction'),
