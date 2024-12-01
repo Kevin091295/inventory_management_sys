@@ -1,12 +1,58 @@
 {% extends 'partials/base.html' %}
-{% block title %}Home Page{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
-{% if user.is_authenticated and user.is_staff and user.is_superuser %}
+<div class="container mt-4">
+    <h2>Stock In/Out Graph</h2>
+    <canvas id="stockChart" width="400" height="200"></canvas>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Prepare stock data
+    const stockInData = {{ stock_in_data|safe }};
+    const stockOutData = {{ stock_out_data|safe }};
 
-{% else %}
-{% include 'dashboard/customer_index.html' %}
-{% endif%}
+    // Format data for the chart
+    const labels = stockInData.map(data => new Date(data.timestamp).toLocaleDateString());
+    const stockInQuantities = stockInData.map(data => data.quantity);
+    const stockOutQuantities = stockOutData.map(data => data.quantity);
 
+    // Create the chart
+    const ctx = document.getElementById('stockChart').getContext('2d');
+    const stockChart = new Chart(ctx, {
+        type: 'line', // or 'bar' if you prefer a bar chart
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Stock In',
+                    data: stockInQuantities,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 1,
+                },
+                {
+                    label: 'Stock Out',
+                    data: stockOutQuantities,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderWidth: 1,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Stock In/Out Trends',
+                },
+            },
+        },
+    });
+</script>
 {% endblock %}

@@ -143,5 +143,6 @@ STATICFILES_DIRS = [
 STATIC_ROOT = (BASE_DIR/"asert/")
 
 LOGIN_REDIRECT_URL = 'dashboard-index'
-
 LOGIN_URL = 'user-login'
+LOGOUT_REDIRECT_URL = '/'  # Redirect to home page or any other desired URL
+

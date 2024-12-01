@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Product, StockTransaction, Category, Supplier
-from .forms import ProductForm, CategoryForm, SupplierForm
+from .forms import ProductForm, CategoryForm, SupplierForm, StockTransactionForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .decorators import auth_users, allowed_users
@@ -12,17 +12,15 @@ from django.shortcuts import get_object_or_404
 
 @login_required(login_url="user-login")
 def index(request):
-    product = Product.objects.all()
-    product_count = product.count()
-    customer = User.objects.filter(groups=2)
-    customer_count = customer.count()
+
+    stock_in_data = StockTransaction.objects.filter(transaction_type='IN').values('timestamp', 'quantity')
+    stock_out_data = StockTransaction.objects.filter(transaction_type='OUT').values('timestamp', 'quantity')
 
     context = {
-        "product": product,
-        "product_count": product_count,
-        "customer_count": customer_count,
+        'stock_in_data': list(stock_in_data),
+        'stock_out_data': list(stock_out_data),
     }
-    return render(request, "dashboard/index.html", context)
+    return render(request, 'dashboard/index.html', context)
 
 
 @login_required(login_url="user-login")
@@ -156,13 +154,49 @@ def stock_update(request):
 
 @login_required(login_url="user-login")
 def stock_transaction_list(request):
-    # Get all stock transactions, sorted by latest first
     transactions = StockTransaction.objects.all().order_by("-timestamp")
 
     context = {
         "transactions": transactions,  # Pass transactions to the template
     }
+    print("transactions", transactions)
     return render(request, "dashboard/stock_transaction_list.html", context)
+
+
+def add_stock_transaction(request):
+    if request.method == 'POST':
+        form = StockTransactionForm(request.POST)
+        if form.is_valid():
+            # Save the form but don't commit yet
+            transaction = form.save(commit=False)
+            # Set the performed_by field to the logged-in user
+            transaction.performed_by = request.user
+            transaction.save()
+            return redirect('dashboard-stock-transactions')  # Redirect to the transactions page
+    else:
+        form = StockTransactionForm()
+
+    return render(request, 'dashboard/add_stock_transaction.html', {'form': form})
+
+
+def edit_stock_transaction(request, pk):
+    transaction = get_object_or_404(StockTransaction, pk=pk)
+    if request.method == "POST":
+        form = StockTransactionForm(request.POST, instance=transaction)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard-stock-transactions')
+    else:
+        form = StockTransactionForm(instance=transaction)
+    return render(request, 'dashboard/edit_stock_transaction.html', {'form': form})
+
+
+@login_required(login_url="user-login")
+def delete_stock_transaction(request, pk):
+    transaction = get_object_or_404(StockTransaction, pk=pk)
+    transaction.delete()
+    messages.success(request, "Stock transaction deleted successfully!")
+    return redirect('dashboard-stock-transactions')
 
 
 @login_required(login_url="user-login")

@@ -40,10 +40,14 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'user-logout' %}">
+                    <form id="logout-form" action="{% url 'user-logout' %}" method="POST" style="display: none;">
+                        {% csrf_token %}
+                    </form>
+                    <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 </li>
+                
             </ul>
         </div>
         {% else %}

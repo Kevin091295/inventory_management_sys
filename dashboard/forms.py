@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, Category, Supplier
+from .models import Product, Category, Supplier, StockTransaction
 
 
 class ProductForm(forms.ModelForm):
@@ -38,3 +38,9 @@ class SupplierForm(forms.ModelForm):
                 'placeholder': 'Enter phone number'
             }),
         }
+
+
+class StockTransactionForm(forms.ModelForm):
+    class Meta:
+        model = StockTransaction
+        fields = ['product', 'quantity', 'transaction_type', 'remarks']  

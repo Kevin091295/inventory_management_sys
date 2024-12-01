@@ -28,8 +28,8 @@ urlpatterns = [
     path('suppliers/delete/<int:pk>/', views.delete_supplier, name='delete-supplier'),
 
     # stock transactions
-     path('stock-transactions/', views.stock_transaction_list, name='dashboard-stock-transactions'),
-    path('update_stock_page/', views.stock_update_page, name='stock_update_page'),
-    path('update_stock/<int:product_id>/<int:quantity>/<str:transaction_type>/', views.stock_update, name='update_stock'),
-
+    path('stock-transactions/', views.stock_transaction_list, name='dashboard-stock-transactions'),
+    path('stock-transactions/add/', views.add_stock_transaction, name='add-stock-transaction'),
+    path('stock-transactions/edit/<int:pk>/', views.edit_stock_transaction, name='edit-stock-transaction'),
+    path('stock-transactions/delete/<int:pk>/', views.delete_stock_transaction, name='delete-stock-transaction'),
 ]

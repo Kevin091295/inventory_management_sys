@@ -1,9 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
-
-from django.db import models
-
+import uuid
 
 class Product(models.Model):
     name = models.CharField(max_length=100, null=True)
@@ -35,7 +32,6 @@ class Supplier(models.Model):
     def __str__(self):
         return self.name
 
-from django.contrib.auth.models import User
 
 class StockTransaction(models.Model):
     TRANSACTION_TYPES = [
@@ -49,7 +45,16 @@ class StockTransaction(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     performed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, to_field="username")
 
-
+    # New Fields
+    reference_number = models.CharField(max_length=36, unique=True, editable=False, default=uuid.uuid4)
+    remarks = models.CharField(max_length=255, blank=True, null=True)
+    
+    
     def __str__(self):
         return f'{self.transaction_type} - {self.product.name} ({self.quantity}) by {self.performed_by.username if self.performed_by else "Unknown"}'
 
+
+    def save(self, *args, **kwargs):
+        if not self.reference_number:
+            self.reference_number = f'TRX-{self.timestamp.strftime("%Y%m%d")}-{self.id or ""}'
+        super().save(*args, **kwargs)

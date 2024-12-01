@@ -1,0 +1,14 @@
+{% extends 'partials/base.html' %}
+{% block title %}Edit Stock Transaction{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Stock Transaction</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{% url 'dashboard-stock-transactions' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
