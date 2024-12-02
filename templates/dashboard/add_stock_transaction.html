@@ -3,45 +3,49 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Add Stock Transaction</h2>
-    <form method="post" id="stock-transaction-form">
+    <h2 class="mb-4 text-center text-primary">Add Stock Transaction</h2>
+    <form method="post" id="stock-transaction-form" class="p-4 shadow rounded bg-white">
         {% csrf_token %}
 
         <!-- Transaction Type -->
         <div class="form-group d-flex align-items-center">
-            <label for="id_transaction_type" class="mr-3">Transaction Type:</label>
-            <button type="button" id="btn-add-stock" class="btn btn-success mr-2" onclick="toggleTransactionType('ADD')">Want to Add</button>
-            <button type="button" id="btn-remove-stock" class="btn btn-danger" onclick="toggleTransactionType('REMOVE')">Want to Remove</button>
+            <label for="id_transaction_type" class="mr-3 font-weight-bold">Transaction Type:</label>
+            <button type="button" id="btn-add-stock" class="btn btn-success mr-3 px-4 py-2" onclick="toggleTransactionType('ADD')">Want to Add</button>
+            <button type="button" id="btn-remove-stock" class="btn btn-danger px-4 py-2" onclick="toggleTransactionType('REMOVE')">Want to Remove</button>
             <input type="hidden" id="id_transaction_type" name="transaction_type">
         </div>
 
         <!-- Product Selection -->
         <div class="form-group">
-            <label for="id_product">Product</label>
+            <label for="id_product" class="font-weight-bold">Product</label>
             {{ form.product }}
         </div>
 
         <!-- Quantity -->
         <div class="form-group">
-            <label for="id_quantity">Quantity</label>
+            <label for="id_quantity" class="font-weight-bold">Quantity</label>
             <div class="d-flex align-items-center">
                 <input type="number" id="id_quantity" name="quantity" class="form-control mr-3" style="width: 120px;" min="1" placeholder="Enter quantity">
-                <input type="text" id="available-stock" class="form-control bg-light text-dark" style="width: 150px;" readonly placeholder="Available: --">
+                <span id="available-stock" class="badge badge-info p-2" style="font-size: 16px;">Available: --</span>
             </div>
         </div>
 
         <!-- Remarks -->
         <div class="form-group">
-            <label for="id_remarks">Remarks</label>
+            <label for="id_remarks" class="font-weight-bold">Remarks</label>
             {{ form.remarks }}
         </div>
 
         <!-- Buttons -->
-        <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
-        <a href="{% url 'dashboard-stock-transactions' %}" class="btn btn-secondary">Cancel</a>
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary px-4 py-2" id="btn-save">Save</button>
+            <a href="{% url 'dashboard-stock-transactions' %}" class="btn btn-secondary px-4 py-2">Cancel</a>
+        </div>
     </form>
 </div>
 
+<!-- SweetAlert for notifications -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     let selectedTransactionType = null;
 
@@ -66,12 +70,18 @@
             .then(response => response.json())
             .then(data => {
                 if (data.stock_level !== undefined) {
-                    document.getElementById("available-stock").value = `Available: ${data.stock_level}`;
+                    document.getElementById("available-stock").textContent = `Available: ${data.stock_level}`;
                 } else {
-                    document.getElementById("available-stock").value = "Available: --";
+                    document.getElementById("available-stock").textContent = "Available: --";
                 }
             })
-            .catch(error => console.error("Error fetching stock level:", error));
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Failed to fetch stock level!',
+                });
+            });
     });
 
     // Validate the form before submission
@@ -82,30 +92,46 @@
 
         // Check if transaction type is selected
         if (!transactionType) {
-            alert("Please select a transaction type (Add or Remove).");
+            Swal.fire({
+                icon: 'warning',
+                title: 'Missing Transaction Type',
+                text: 'Please select a transaction type (Add or Remove).',
+            });
             e.preventDefault();
             return;
         }
 
         // Check if product is selected
         if (!product) {
-            alert("Please select a product.");
+            Swal.fire({
+                icon: 'warning',
+                title: 'Missing Product',
+                text: 'Please select a product.',
+            });
             e.preventDefault();
             return;
         }
 
         // Check if quantity is valid
         if (!quantity || parseInt(quantity) <= 0) {
-            alert("Please enter a valid quantity greater than 0.");
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Quantity',
+                text: 'Please enter a valid quantity greater than 0.',
+            });
             e.preventDefault();
             return;
         }
 
         // If removing stock, ensure quantity is less than or equal to available stock
         if (transactionType === "REMOVE") {
-            const availableStock = parseInt(document.getElementById("available-stock").value.replace("Available: ", ""));
+            const availableStock = parseInt(document.getElementById("available-stock").textContent.replace("Available: ", ""));
             if (parseInt(quantity) > availableStock) {
-                alert(`Cannot remove ${quantity} units. Only ${availableStock} units are available.`);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Insufficient Stock',
+                    text: `Cannot remove ${quantity} units. Only ${availableStock} units are available.`,
+                });
                 e.preventDefault();
                 return;
             }

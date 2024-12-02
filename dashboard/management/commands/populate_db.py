@@ -1,6 +1,6 @@
 import random
-import uuid
-from datetime import datetime, timedelta
+import string
+from datetime import datetime
 from django.core.management.base import BaseCommand
 from dashboard.models import Category, Supplier, Product, StockTransaction
 from django.contrib.auth.models import User
@@ -8,6 +8,18 @@ from django.contrib.auth.models import User
 
 class Command(BaseCommand):
     help = 'Populate the database with dummy data'
+
+    def generate_reference_number(self):
+        """
+        Generate reference number in the new format: 2 alphabets + 3 digits + 1 alphabet + 1 digit + 1 alphabet.
+        """
+        return (
+            ''.join(random.choices(string.ascii_uppercase, k=2)) +  # 2 alphabets
+            ''.join(random.choices(string.digits, k=3)) +           # 3 numbers
+            random.choice(string.ascii_uppercase) +                 # 1 alphabet
+            random.choice(string.digits) +                          # 1 number
+            random.choice(string.ascii_uppercase)                   # 1 alphabet
+        )
 
     def handle(self, *args, **kwargs):
         # Step 1: Create Categories
@@ -58,29 +70,44 @@ class Command(BaseCommand):
                 category=random.choice(category_objects),
                 supplier=random.choice(supplier_objects),
                 stock_level=random.randint(10, 100),
-                price=random.uniform(1.0, 20.0)
+                price=round(random.uniform(1.0, 20.0), 2)  # Limit price to 2 decimal places
             )
             product_objects.append(product)
         self.stdout.write(self.style.SUCCESS(f"Created {len(product_objects)} products"))
 
         # Step 4: Create Stock Transactions
         transaction_types = ["ADD", "REMOVE"]
-        admin_user = User.objects.get_or_create(username="admin", is_superuser=True)[0]
-        kevin_user = User.objects.get_or_create(username="kevin", is_staff=True)[0]
+        admin_user, _ = User.objects.get_or_create(username="admin", is_superuser=True, defaults={"email": "admin@example.com"})
+        kevin_user, _ = User.objects.get_or_create(username="kevin", is_staff=True, defaults={"email": "kevin@example.com"})
         users = [admin_user, kevin_user]
         stock_transactions = []
         for _ in range(70):  # Create 70 transactions
             product = random.choice(product_objects)
             transaction_type = random.choice(transaction_types)
-            quantity = random.randint(1, 20)
-            performed_by = random.choice(users)
-            reference_number = f"TRX-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4()}"
+            if transaction_type == "REMOVE" and product.stock_level <= 0:
+                continue  # Skip if there is no stock to remove
+
+            # Determine the quantity
+            if transaction_type == "REMOVE":
+                quantity = random.randint(1, product.stock_level)  # Ensure quantity is within stock
+            else:
+                quantity = random.randint(1, 20)
+
+            # Update stock level
+            if transaction_type == "REMOVE":
+                product.stock_level -= quantity
+            else:
+                product.stock_level += quantity
+            product.save()
+
+            # Create the stock transaction
+            reference_number = self.generate_reference_number()
             remarks = f"Dummy transaction for {product.name}"
             transaction = StockTransaction.objects.create(
                 product=product,
                 quantity=quantity,
                 transaction_type=transaction_type,
-                performed_by=performed_by,
+                performed_by=random.choice(users),
                 reference_number=reference_number,
                 remarks=remarks
             )

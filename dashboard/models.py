@@ -1,4 +1,6 @@
 from django.db import models
+import random
+import string
 from django.contrib.auth.models import User
 import uuid
 
@@ -46,7 +48,7 @@ class StockTransaction(models.Model):
     performed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, to_field="username")
 
     # New Fields
-    reference_number = models.CharField(max_length=36, unique=True, editable=False, default=uuid.uuid4)
+    reference_number = models.CharField(max_length=12, unique=True, editable=False)
     remarks = models.CharField(max_length=255, blank=True, null=True)
     
     
@@ -55,6 +57,17 @@ class StockTransaction(models.Model):
 
 
     def save(self, *args, **kwargs):
+
+        if not self.reference_number:
+            # Generate reference number: 2 alphabets + 3 numbers + 1 alphabet + 1 number + 1 alphabet
+            self.reference_number = (
+                ''.join(random.choices(string.ascii_uppercase, k=2)) +  # 2 alphabets
+                ''.join(random.choices(string.digits, k=3)) +           # 3 numbers
+                random.choice(string.ascii_uppercase) +                 # 1 alphabet
+                random.choice(string.digits) +                          # 1 number
+                random.choice(string.ascii_uppercase)                   # 1 alphabet
+            )
+
         if self.transaction_type == 'REMOVE':
             if self.product.stock_level < self.quantity:
                 raise ValueError(f"Cannot remove {self.quantity} units. Only {self.product.stock_level} units available.")

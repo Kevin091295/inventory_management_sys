@@ -25,6 +25,39 @@ def index(request):
 
 
 @login_required(login_url="user-login")
+@allowed_users(allowed_roles=["Admin"])
+def customers(request):
+    customer = User.objects.filter(groups=2)
+    customer_count = customer.count()
+    product = Product.objects.all()
+    product_count = product.count()
+    context = {
+        "customer": customer,
+        "customer_count": customer_count,
+        "product_count": product_count,
+    }
+    return render(request, "dashboard/customers.html", context)
+
+
+@login_required(login_url="user-login")
+@allowed_users(allowed_roles=["Admin"])
+def customer_detail(request, pk):
+    customer = User.objects.filter(groups=2)
+    customer_count = customer.count()
+    product = Product.objects.all()
+    product_count = product.count()
+    customers = User.objects.get(id=pk)
+    context = {
+        "customers": customers,
+        "customer_count": customer_count,
+        "product_count": product_count,
+    }
+    return render(request, "dashboard/customers_detail.html", context)
+
+
+# ------------------ PRODUCTS  ------------------  
+
+@login_required(login_url="user-login")
 def products(request):
     products = Product.objects.all()  # Fetch all products
     context = {
@@ -71,42 +104,10 @@ def delete_product(request, pk):
         return redirect("dashboard-products")  # Redirect to the product list page
     return render(request, "dashboard/confirm_delete.html", {"object": product})
 
+# ------------------ PRODUCTS  ------------------ 
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-@login_required(login_url="user-login")
-@allowed_users(allowed_roles=["Admin"])
-def customers(request):
-    customer = User.objects.filter(groups=2)
-    customer_count = customer.count()
-    product = Product.objects.all()
-    product_count = product.count()
-    context = {
-        "customer": customer,
-        "customer_count": customer_count,
-        "product_count": product_count,
-    }
-    return render(request, "dashboard/customers.html", context)
-
-
-@login_required(login_url="user-login")
-@allowed_users(allowed_roles=["Admin"])
-def customer_detail(request, pk):
-    customer = User.objects.filter(groups=2)
-    customer_count = customer.count()
-    product = Product.objects.all()
-    product_count = product.count()
-    customers = User.objects.get(id=pk)
-    context = {
-        "customers": customers,
-        "customer_count": customer_count,
-        "product_count": product_count,
-    }
-    return render(request, "dashboard/customers_detail.html", context)
-
-
-@login_required
-def stock_update_page(request):
-    return render(request, "dashboard/update_stock.html")
-
+# ------------------ STOCK TRANSACTION  ------------------ 
 
 @login_required(login_url="user-login")
 @allowed_users(allowed_roles=["Admin", "Staff"])
@@ -153,14 +154,10 @@ def stock_update(request):
     return render(request, "dashboard/stock_update.html", context)
 
 
-@login_required(login_url="user-login")
+@login_required
 def stock_transaction_list(request):
     transactions = StockTransaction.objects.all().order_by("-timestamp")
-
-    context = {
-        "transactions": transactions,  # Pass transactions to the template
-    }
-
+    context = {"transactions": transactions}
     return render(request, "dashboard/stock_transaction_list.html", context)
 
 
@@ -172,22 +169,22 @@ def get_stock_level(request, product_id):
         return JsonResponse({'error': 'Product not found'}, status=404)
 
 
+@login_required
 def add_stock_transaction(request):
     if request.method == 'POST':
         form = StockTransactionForm(request.POST)
         if form.is_valid():
-            # Save the form but don't commit yet
-
-
             transaction = form.save(commit=False)
-            # Set the performed_by field to the logged-in user
             transaction.performed_by = request.user
             transaction.save()
-            return redirect('dashboard-stock-transactions')  # Redirect to the transactions page
+            messages.success(request, f"Successfully added stock transaction for {transaction.product.name}.")
+            return redirect('dashboard-stock-transactions')
+        else:
+            messages.error(request, "Failed to add stock transaction. Please check the form.")
     else:
         form = StockTransactionForm()
 
-    return render(request, 'dashboard/add_stock_transaction.html', {'form': form})
+    return render(request, "dashboard/add_stock_transaction.html", {"form": form})
 
 
 def edit_stock_transaction(request, pk):
@@ -202,12 +199,16 @@ def edit_stock_transaction(request, pk):
     return render(request, 'dashboard/edit_stock_transaction.html', {'form': form})
 
 
-@login_required(login_url="user-login")
+@login_required
 def delete_stock_transaction(request, pk):
     transaction = get_object_or_404(StockTransaction, pk=pk)
+    product_name = transaction.product.name
     transaction.delete()
-    messages.success(request, "Stock transaction deleted successfully!")
-    return redirect('dashboard-stock-transactions')
+    messages.success(request, f"Stock transaction for {product_name} was successfully deleted.")
+    return redirect("dashboard-stock-transactions")
+
+# ------------------ CATEGORY  ------------------ 
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
 @login_required(login_url="user-login")
@@ -220,40 +221,33 @@ def categories(request):
     return render(request, "dashboard/category_list.html", context)
 
 
-@login_required(login_url="user-login")
+@login_required
 def add_category(request):
-    if request.method == "POST":
+    if request.method == 'POST':
         form = CategoryForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Category added successfully!")
-            return redirect("dashboard-categories")  # Redirect back to categories list
+            messages.success(request, "Category added successfully.")
+            return redirect('dashboard-categories')
+        else:
+            messages.error(request, "Failed to add category. Please try again.")
     else:
         form = CategoryForm()
-
-    context = {
-        "form": form,
-    }
-    return render(request, "dashboard/add_category.html", context)
+    return render(request, 'dashboard/add_category.html', {'form': form})
 
 
-@login_required(login_url="user-login")
+@login_required
 def edit_category(request, pk):
-    category = get_object_or_404(Category, id=pk)
-    if request.method == "POST":
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
         form = CategoryForm(request.POST, instance=category)
         if form.is_valid():
             form.save()
-            messages.success(request, "Category updated successfully!")
-            return redirect("dashboard-categories")
+            messages.success(request, "Category updated successfully.")
+            return redirect('dashboard-categories')
     else:
         form = CategoryForm(instance=category)
-
-    context = {
-        "form": form,
-        "category": category,
-    }
-    return render(request, "dashboard/edit_category.html", context)
+    return render(request, 'dashboard/edit_category.html', {'form': form})
 
 
 @login_required(login_url="user-login")
@@ -264,36 +258,43 @@ def delete_category(request, pk):
     return redirect("dashboard-categories")
 
 
-# View for listing suppliers
+# ------------------ SUPPLIER  ------------------ 
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 def suppliers(request):
     supplier_list = Supplier.objects.all()
     context = {"suppliers": supplier_list}
     return render(request, "dashboard/supplier_list.html", context)
 
 
-# View for adding a supplier
+@login_required
 def add_supplier(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        phone_number = request.POST.get("phone_number")
-        Supplier.objects.create(name=name, email=email, phone_number=phone_number)
-        messages.success(request, "Supplier added successfully!")
-        return redirect("dashboard-suppliers")
-    return render(request, "dashboard/add_supplier.html")
+    if request.method == 'POST':
+        form = SupplierForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Supplier added successfully.")
+            return redirect('dashboard-suppliers')
+        else:
+            messages.error(request, "Failed to add supplier. Please try again.")
+    else:
+        form = SupplierForm()
+    return render(request, 'dashboard/add_supplier.html', {'form': form})
 
 
-# View for editing a supplier
+
+@login_required
 def edit_supplier(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
-    if request.method == "POST":
-        supplier.name = request.POST.get("name")
-        supplier.email = request.POST.get("email")
-        supplier.phone_number = request.POST.get("phone_number")
-        supplier.save()
-        messages.success(request, "Supplier updated successfully!")
-        return redirect("dashboard-suppliers")
-    return render(request, "dashboard/edit_supplier.html", {"supplier": supplier})
+    if request.method == 'POST':
+        form = SupplierForm(request.POST, instance=supplier)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Supplier updated successfully.")
+            return redirect('dashboard-suppliers')
+    else:
+        form = SupplierForm(instance=supplier)
+    return render(request, 'dashboard/edit_supplier.html', {'form': form})
 
 
 # View for deleting a supplier
