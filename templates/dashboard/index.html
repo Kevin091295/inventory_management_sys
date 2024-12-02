@@ -3,56 +3,127 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Stock In/Out Graph</h2>
-    <canvas id="stockChart" width="400" height="200"></canvas>
+    <h1 class="mb-4">Dashboard</h1>
+
+    <!-- Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-header">Total Products</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_products }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-header">Total Categories</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_categories }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-header">Total Transactions</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_transactions }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-header">Low Stock Items</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ low_stock_items }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Level Chart -->
+    <div class="card mb-4">
+        <div class="card-header">Stock Levels</div>
+        <div class="card-body">
+            <canvas id="stockChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- Recent Stock Transactions -->
+    <div class="card mb-4">
+        <div class="card-header">Recent Stock Transactions</div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Reference Number</th>
+                        <th>Product</th>
+                        <th>Transaction Type</th>
+                        <th>Quantity</th>
+                        <th>Performed By</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in recent_transactions %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ transaction.reference_number }}</td>
+                        <td>{{ transaction.product.name }}</td>
+                        <td>
+                            {% if transaction.transaction_type == "ADD" %}
+                            <span class="text-success">Added</span>
+                            {% else %}
+                            <span class="text-danger">Removed</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ transaction.quantity }}</td>
+                        <td>{{ transaction.performed_by }}</td>
+                        <td>{{ transaction.timestamp|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="{% url 'dashboard-stock-transactions' %}" class="btn btn-primary mt-2">View All Transactions</a>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card mb-4">
+        <div class="card-header">Quick Actions</div>
+        <div class="card-body">
+            <a href="{% url 'add-product' %}" class="btn btn-primary">Add Product</a>
+            <a href="{% url 'add-stock-transaction' %}" class="btn btn-success">Add Stock Transaction</a>
+            <a href="{% url 'dashboard-stock-transactions' %}" class="btn btn-info">View Transactions</a>
+            <a href="{% url 'low-stock-items' %}" class="btn btn-danger">View Low Stock Items</a>
+        </div>
+    </div>
 </div>
+{% endblock %}
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Prepare stock data
-    const stockInData = {{ stock_in_data|safe }};
-    const stockOutData = {{ stock_out_data|safe }};
-
-    // Format data for the chart
-    const labels = stockInData.map(data => new Date(data.timestamp).toLocaleDateString());
-    const stockInQuantities = stockInData.map(data => data.quantity);
-    const stockOutQuantities = stockOutData.map(data => data.quantity);
-
-    // Create the chart
-    const ctx = document.getElementById('stockChart').getContext('2d');
-    const stockChart = new Chart(ctx, {
-        type: 'line', // or 'bar' if you prefer a bar chart
+    var ctx = document.getElementById('stockChart').getContext('2d');
+    var stockChart = new Chart(ctx, {
+        type: 'bar',
         data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Stock In',
-                    data: stockInQuantities,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderWidth: 1,
-                },
-                {
-                    label: 'Stock Out',
-                    data: stockOutQuantities,
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderWidth: 1,
-                },
-            ],
+            labels: {{ product_names|safe }},
+            datasets: [{
+                label: 'Stock Levels',
+                data: {{ product_stock_levels|safe }},
+                backgroundColor: {{ stock_colors|safe }}
+            }]
         },
         options: {
             responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: 'Stock In/Out Trends',
-                },
-            },
-        },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
     });
 </script>
-{% endblock %}
+

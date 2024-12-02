@@ -3,7 +3,7 @@ from . import views
 from .models import Product, Supplier, Category
 
 urlpatterns = [
-    path('index/', views.index, name='dashboard-index'),
+    path('index/', views.dashboard_index, name='dashboard-index'),
 
     path('customers/', views.customers, name='dashboard-customers'),
     path('customers/detial/<int:pk>/', views.customer_detail,
@@ -33,4 +33,7 @@ urlpatterns = [
     path('stock-transactions/add/', views.add_stock_transaction, name='add-stock-transaction'),
     path('stock-transactions/edit/<int:pk>/', views.edit_stock_transaction, name='edit-stock-transaction'),
     path('stock-transactions/delete/<int:pk>/', views.delete_stock_transaction, name='delete-stock-transaction'),
+
+    path('low-stock-items/', views.low_stock_items, name='low-stock-items'),
+
 ]

@@ -10,19 +10,37 @@ from django.http import JsonResponse
 
 # Create your views here.
 
+@login_required(login_url='user-login')
+def dashboard_index(request):
+    # Summary Cards Data
+    total_products = Product.objects.count()
+    total_categories = Category.objects.count()
+    total_transactions = StockTransaction.objects.count()
+    low_stock_items = Product.objects.filter(stock_level__lt=10).count()
 
-@login_required(login_url="user-login")
-def index(request):
+    # Recent Transactions
+    recent_transactions = StockTransaction.objects.order_by('-timestamp')[:5]
 
-    stock_in_data = StockTransaction.objects.filter(transaction_type='IN').values('timestamp', 'quantity')
-    stock_out_data = StockTransaction.objects.filter(transaction_type='OUT').values('timestamp', 'quantity')
+    # Stock Level Chart Data
+    products = Product.objects.all()
+    product_names = [product.name for product in products]
+    product_stock_levels = [product.stock_level for product in products]
+    stock_colors = [
+        'rgba(75, 192, 192, 0.7)' if product.stock_level >= 10 else 'rgba(255, 99, 132, 0.7)'
+        for product in products
+    ]
 
     context = {
-        'stock_in_data': list(stock_in_data),
-        'stock_out_data': list(stock_out_data),
+        'total_products': total_products,
+        'total_categories': total_categories,
+        'total_transactions': total_transactions,
+        'low_stock_items': low_stock_items,
+        'recent_transactions': recent_transactions,
+        'product_names': product_names,
+        'product_stock_levels': product_stock_levels,
+        'stock_colors': stock_colors,
     }
     return render(request, 'dashboard/index.html', context)
-
 
 @login_required(login_url="user-login")
 @allowed_users(allowed_roles=["Admin"])
@@ -267,6 +285,10 @@ def delete_stock_transaction(request, pk):
     transaction.delete()
     messages.success(request, f"Stock transaction for {product_name} was successfully deleted.")
     return redirect("dashboard-stock-transactions")
+
+def low_stock_items(request):
+    low_stock_products = Product.objects.filter(stock_level__lt=10)
+    return render(request, 'dashboard/low_stock_items.html', {'low_stock_products': low_stock_products})
 
 # ------------------ CATEGORY  ------------------ 
 # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
