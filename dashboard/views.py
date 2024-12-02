@@ -154,10 +154,71 @@ def stock_update(request):
     return render(request, "dashboard/stock_update.html", context)
 
 
-@login_required
+# @login_required
+# def stock_transaction_list(request):
+#     transactions = StockTransaction.objects.all().order_by("-timestamp")
+#     context = {"transactions": transactions}
+#     return render(request, "dashboard/stock_transaction_list.html", context)
+from django.db.models import Q
+from datetime import datetime
+
+@login_required(login_url="user-login")
 def stock_transaction_list(request):
     transactions = StockTransaction.objects.all().order_by("-timestamp")
-    context = {"transactions": transactions}
+
+    # Get filter values from the request
+    transaction_type = request.GET.get("transaction_type", "")
+    product_id = request.GET.get("product", "")
+    performed_by = request.GET.get("performed_by", "")
+    date_from = request.GET.get("date_from", "")
+    date_to = request.GET.get("date_to", "")
+    search_query = request.GET.get("search_query", "")
+
+    # Apply filters
+    if transaction_type:
+        transactions = transactions.filter(transaction_type=transaction_type)
+
+    if product_id:
+        transactions = transactions.filter(product__id=product_id)
+
+    if performed_by:
+        transactions = transactions.filter(performed_by__username=performed_by)
+
+    if date_from:
+        try:
+            date_from_obj = datetime.strptime(date_from, "%Y-%m-%d")
+            transactions = transactions.filter(timestamp__date__gte=date_from_obj)
+        except ValueError:
+            pass
+
+    if date_to:
+        try:
+            date_to_obj = datetime.strptime(date_to, "%Y-%m-%d")
+            transactions = transactions.filter(timestamp__date__lte=date_to_obj)
+        except ValueError:
+            pass
+
+    if search_query:
+        transactions = transactions.filter(reference_number__icontains=search_query)
+
+    # Fetch necessary data for filters
+    products = Product.objects.all()
+    users = User.objects.values_list("username", flat=True)
+    transaction_types = StockTransaction.TRANSACTION_TYPES
+
+    context = {
+        "transactions": transactions,
+        "products": products,
+        "users": users,
+        "transaction_types": transaction_types,
+        "transaction_type": transaction_type,
+        "product_id": product_id,
+        "performed_by": performed_by,
+        "date_from": date_from,
+        "date_to": date_to,
+        "search_query": search_query,
+    }
+
     return render(request, "dashboard/stock_transaction_list.html", context)
 
 
