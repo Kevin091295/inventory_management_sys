@@ -27,12 +27,47 @@ Ensure you have the following installed on your system:
 ### Installation Steps
 
 1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/jaydeepravaliya/inventory_management_system.git
-   ```
+
+  ```bash
+  git clone https://github.com/jaydeepravaliya/inventory_management_system.git
+  ```
+
 2. **Navigate to the project directory**:
-   ```bash
-   cd inventory_management_system
-   ```
+
+  ```bash
+  cd inventory_management_system
+  ```
 
 3. **Set up a virtual environment (optional but recommended)**:
+
+  ```bash
+  python -m venv venv
+  source venv/bin/activate # On Windows: venv\Scripts\activate
+  ```
+
+4. **Install required packages**:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Database Setup
+
+1. **Apply database migrations**: Run the following commands to set up the database schema:
+
+  ```bash
+  python manage.py makemigrations
+  python manage.py migrate
+  ```
+
+2. **Create a superuser**: This user will have admin privileges to access the Django Admin panel.
+
+```bash
+python manage.py createsuperuser
+```
+
+1. **Populate the database with dummy data (optional)**: If you want to quickly populate the database with sample data for testing, run the following command:
+
+```bash
+python manage.py populate_db
+```
