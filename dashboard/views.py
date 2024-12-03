@@ -1,10 +1,11 @@
+from datetime import datetime
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Product, StockTransaction, Category, Supplier
 from .forms import ProductForm, CategoryForm, SupplierForm, StockTransactionForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .decorators import auth_users, allowed_users
+from .decorators import admin_required, auth_users, allowed_users, staff_or_admin
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 
@@ -58,6 +59,7 @@ def products(request):
 
 
 @login_required(login_url="user-login")
+@admin_required
 def add_product(request):
     if request.method == "POST":
         form = ProductForm(request.POST)
@@ -73,7 +75,7 @@ def add_product(request):
     }
     return render(request, "dashboard/add_product.html", context)
 
-
+@admin_required
 def edit_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
@@ -87,7 +89,7 @@ def edit_product(request, pk):
         request, "dashboard/edit_product.html", {"form": form, "product": product}
     )
 
-
+@admin_required
 def delete_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":  # Confirm delete
@@ -101,7 +103,7 @@ def delete_product(request, pk):
 # ------------------ STOCK TRANSACTION  ------------------ 
 
 @login_required(login_url="user-login")
-@allowed_users(allowed_roles=["Admin", "Staff"])
+@staff_or_admin
 def stock_update(request):
     products = Product.objects.all()
     stock_transactions = StockTransaction.objects.all()
@@ -145,13 +147,6 @@ def stock_update(request):
     return render(request, "dashboard/stock_update.html", context)
 
 
-# @login_required
-# def stock_transaction_list(request):
-#     transactions = StockTransaction.objects.all().order_by("-timestamp")
-#     context = {"transactions": transactions}
-#     return render(request, "dashboard/stock_transaction_list.html", context)
-from django.db.models import Q
-from datetime import datetime
 
 @login_required(login_url="user-login")
 def stock_transaction_list(request):
@@ -278,6 +273,7 @@ def categories(request):
 
 
 @login_required
+@admin_required
 def add_category(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST)
@@ -293,6 +289,7 @@ def add_category(request):
 
 
 @login_required
+@admin_required
 def edit_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
@@ -307,6 +304,7 @@ def edit_category(request, pk):
 
 
 @login_required(login_url="user-login")
+@admin_required
 def delete_category(request, pk):
     category = get_object_or_404(Category, id=pk)
     category.delete()
@@ -324,6 +322,7 @@ def suppliers(request):
 
 
 @login_required
+@admin_required
 def add_supplier(request):
     if request.method == 'POST':
         form = SupplierForm(request.POST)
@@ -340,6 +339,7 @@ def add_supplier(request):
 
 
 @login_required
+@admin_required
 def edit_supplier(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     if request.method == 'POST':
@@ -354,6 +354,7 @@ def edit_supplier(request, pk):
 
 
 # View for deleting a supplier
+@admin_required
 def delete_supplier(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     supplier.delete()
