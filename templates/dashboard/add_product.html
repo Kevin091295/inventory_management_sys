@@ -2,13 +2,48 @@
 {% block title %}Add Product{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Add New Product</h2>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Add Product</button>
-        <a href="{% url 'dashboard-products' %}" class="btn btn-secondary">Cancel</a>
-    </form>
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow-sm p-4" style="width: 500px; border-radius: 10px;">
+        <h2 class="text-center text-primary mb-4">Add Product</h2>
+        <form method="post" id="add-product-form">
+            {% csrf_token %}
+
+            <!-- Product Name -->
+            <div class="form-group">
+                <label for="id_name">Product Name</label>
+                <input type="text" id="id_name" name="name" class="form-control" placeholder="Enter product name" required>
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+                <label for="id_category">Category</label>
+                {{ form.category }}
+            </div>
+
+            <!-- Supplier -->
+            <div class="form-group">
+                <label for="id_supplier">Supplier</label>
+                {{ form.supplier }}
+            </div>
+
+            <!-- Stock Level -->
+            <div class="form-group">
+                <label for="id_stock_level">Initial Stock Level</label>
+                <input type="number" id="id_stock_level" name="stock_level" class="form-control" placeholder="Enter stock level" min="1" required>
+            </div>
+
+            <!-- Price -->
+            <div class="form-group">
+                <label for="id_price">Price</label>
+                <input type="number" id="id_price" name="price" class="form-control" placeholder="Enter price" step="0.01" required>
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="{% url 'dashboard-products' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
