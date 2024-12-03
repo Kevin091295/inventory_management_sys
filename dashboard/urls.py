@@ -5,10 +5,6 @@ from .models import Product, Supplier, Category
 urlpatterns = [
     path('index/', views.dashboard_index, name='dashboard-index'),
 
-    path('customers/', views.customers, name='dashboard-customers'),
-    path('customers/detial/<int:pk>/', views.customer_detail,
-         name='dashboard-customer-detail'),
-
     # Products
     path('products/', views.products, name='dashboard-products'),  # Product list
     path('products/add/', views.add_product, name='add-product'),  # Add product

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .forms import CreateUserForm, UserUpdateForm, ProfileUpdateForm
 
 # Create your views here.
@@ -9,18 +10,26 @@ from .forms import CreateUserForm, UserUpdateForm, ProfileUpdateForm
 
 def register(request):
     if request.method == 'POST':
-        form = CreateUserForm(request.POST)
+        form = UserCreationForm(request.POST)  # Use Django's built-in UserCreationForm
         if form.is_valid():
-            user = form.save()
-            group = Group.objects.get(name='Customers')
-            user.groups.add(group)
-            return redirect('user-login')
+            user = form.save(commit=False)  # Save the user instance but don't commit yet
+            user.is_staff = True  # Mark the user as a staff member
+            user.save()  # Save the updated user instance
+            
+            # Add a success message
+            messages.success(request, 'Staff user registered successfully. You can now log in.')
+
+            return redirect('user-login')  # Redirect to login page after registration
+        else:
+            # Add an error message for invalid submissions
+            messages.error(request, 'There was an error with your submission. Please correct the errors below.')
     else:
-        form = CreateUserForm()
+        form = UserCreationForm()  # Instantiate an empty form for GET requests
+
     context = {
-        'form': form
+        'form': form  # Pass the form to the template
     }
-    return render(request, 'user/register.html', context)
+    return render(request, 'user/register.html', context)  # Render the registration page
 
 
 def profile(request):

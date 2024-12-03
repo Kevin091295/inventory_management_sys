@@ -8,7 +8,6 @@ from .decorators import auth_users, allowed_users
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 
-# Create your views here.
 
 @login_required(login_url='user-login')
 def dashboard_index(request):
@@ -30,6 +29,9 @@ def dashboard_index(request):
         for product in products
     ]
 
+    # Combine product names and stock levels
+    stock_data = zip(product_names, product_stock_levels)
+
     context = {
         'total_products': total_products,
         'total_categories': total_categories,
@@ -39,38 +41,9 @@ def dashboard_index(request):
         'product_names': product_names,
         'product_stock_levels': product_stock_levels,
         'stock_colors': stock_colors,
+        'stock_data': stock_data,  # Pass the combined data
     }
     return render(request, 'dashboard/index.html', context)
-
-@login_required(login_url="user-login")
-@allowed_users(allowed_roles=["Admin"])
-def customers(request):
-    customer = User.objects.filter(groups=2)
-    customer_count = customer.count()
-    product = Product.objects.all()
-    product_count = product.count()
-    context = {
-        "customer": customer,
-        "customer_count": customer_count,
-        "product_count": product_count,
-    }
-    return render(request, "dashboard/customers.html", context)
-
-
-@login_required(login_url="user-login")
-@allowed_users(allowed_roles=["Admin"])
-def customer_detail(request, pk):
-    customer = User.objects.filter(groups=2)
-    customer_count = customer.count()
-    product = Product.objects.all()
-    product_count = product.count()
-    customers = User.objects.get(id=pk)
-    context = {
-        "customers": customers,
-        "customer_count": customer_count,
-        "product_count": product_count,
-    }
-    return render(request, "dashboard/customers_detail.html", context)
 
 
 # ------------------ PRODUCTS  ------------------  
