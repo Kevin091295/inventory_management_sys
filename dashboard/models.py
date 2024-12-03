@@ -46,15 +46,13 @@ class StockTransaction(models.Model):
     # New Fields
     reference_number = models.CharField(max_length=12, unique=True, editable=False)
     remarks = models.CharField(max_length=255, blank=True, null=True)
-    
-    
+
     def __str__(self):
         return f'{self.transaction_type} - {self.product.name} ({self.quantity}) by {self.performed_by.username if self.performed_by else "Unknown"}'
 
     def save(self, *args, **kwargs):
-
         if not self.reference_number:
-            # Generate reference number: 2 alphabets + 3 numbers + 1 alphabet + 1 number + 1 alphabet
+            # Generate a unique reference number
             self.reference_number = (
                 ''.join(random.choices(string.ascii_uppercase, k=2)) +  # 2 alphabets
                 ''.join(random.choices(string.digits, k=3)) +           # 3 numbers
