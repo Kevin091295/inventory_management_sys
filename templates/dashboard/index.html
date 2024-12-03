@@ -8,122 +8,99 @@
     <!-- Overview Cards -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card text-white bg-primary">
-                <div class="card-header">Total Products</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ total_products }}</h5>
+            <a href="{% url 'dashboard-products' %}" class="text-white" style="text-decoration: none;">
+                <div class="card text-white bg-primary">
+                    <div class="card-header">Total Products</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ total_products }}</h5>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-success">
-                <div class="card-header">Total Categories</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ total_categories }}</h5>
+            <a href="{% url 'dashboard-categories' %}" class="text-white" style="text-decoration: none;">
+                <div class="card text-white bg-success">
+                    <div class="card-header">Total Categories</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ total_categories }}</h5>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-info">
-                <div class="card-header">Total Transactions</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ total_transactions }}</h5>
+            <a href="{% url 'dashboard-stock-transactions' %}" class="text-white" style="text-decoration: none;">
+                <div class="card text-white bg-info">
+                    <div class="card-header">Total Transactions</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ total_transactions }}</h5>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-danger">
-                <div class="card-header">Low Stock Items</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ low_stock_items }}</h5>
+            <a href="{% url 'low-stock-items' %}" class="text-white" style="text-decoration: none;">
+                <div class="card text-white bg-danger">
+                    <div class="card-header">Low Stock Items</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ low_stock_items }}</h5>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
-
-    <!-- Stock Level Chart -->
-    <!-- <div class="card mb-4">
-        <div class="card-header">Stock Levels</div>
-        <div class="card-body">
-            <canvas id="stockChart" height="100"></canvas>
-        </div>
-    </div> -->
 
     <!-- Recent Stock Transactions -->
-    <div class="card mb-4">
-        <div class="card-header">Recent Stock Transactions</div>
-        <div class="card-body">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Reference Number</th>
-                        <th>Product</th>
-                        <th>Transaction Type</th>
-                        <th>Quantity</th>
-                        <th>Performed By</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for transaction in recent_transactions %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ transaction.reference_number }}</td>
-                        <td>{{ transaction.product.name }}</td>
-                        <td>
-                            {% if transaction.transaction_type == "ADD" %}
-                            <span class="text-success">Added</span>
-                            {% else %}
-                            <span class="text-danger">Removed</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ transaction.quantity }}</td>
-                        <td>{{ transaction.performed_by }}</td>
-                        <td>{{ transaction.timestamp|date:"M d, Y" }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <a href="{% url 'dashboard-stock-transactions' %}" class="btn btn-primary mt-2">View All Transactions</a>
-        </div>
+<!-- Recent Stock Transactions -->
+<div style="padding: 20px; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <div style="background-color: #e0e4e1; color: #140b0b; padding: 10px 15px; border-radius: 5px; font-size: 18px; font-weight: bold; text-align: center; text-transform: uppercase;">
+        Recent Stock Transactions
     </div>
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Reference Number</th>
+                <th>Product</th>
+                <th>Transaction Type</th>
+                <th>Quantity</th>
+                <th>Performed By</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in recent_transactions %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ transaction.reference_number }}</td>
+                <td>{{ transaction.product.name }}</td>
+                <td>
+                    {% if transaction.transaction_type == "ADD" %}
+                    <span class="text-success">Added</span>
+                    {% else %}
+                    <span class="text-danger">Removed</span>
+                    {% endif %}
+                </td>
+                <td>{{ transaction.quantity }}</td>
+                <td>{{ transaction.performed_by }}</td>
+                <td>{{ transaction.timestamp|date:"M d, Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'dashboard-stock-transactions' %}" class="btn btn-primary mt-2">View All Transactions</a>
+</div>
 
-    <!-- Quick Actions -->
-    <div class="card mb-4">
-        <div class="card-header">Quick Actions</div>
-        <div class="card-body">
-            <a href="{% url 'add-product' %}" class="btn btn-primary">Add Product</a>
-            <a href="{% url 'add-stock-transaction' %}" class="btn btn-success">Add Stock Transaction</a>
-            <a href="{% url 'dashboard-stock-transactions' %}" class="btn btn-info">View Transactions</a>
-            <a href="{% url 'low-stock-items' %}" class="btn btn-danger">View Low Stock Items</a>
-        </div>
+<!-- Quick Actions -->
+<div style="padding: 20px; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <div style="background-color: #e0e4e1; color: #140b0b; padding: 10px 15px; border-radius: 5px; font-size: 18px; font-weight: bold; text-align: center; text-transform: uppercase;">
+        Quick Actions
+    </div>
+    <div class="d-flex flex-wrap justify-content-around mt-3">
+        <a href="{% url 'add-product' %}" class="btn btn-primary m-2">Add Product</a>
+        <a href="{% url 'add-stock-transaction' %}" class="btn btn-success m-2">Add Stock Transaction</a>
+        <a href="{% url 'dashboard-stock-transactions' %}" class="btn btn-info m-2">View Transactions</a>
+        <a href="{% url 'low-stock-items' %}" class="btn btn-danger m-2">View Low Stock Items</a>
     </div>
 </div>
+
 {% endblock %}
-
-<script>
-    var ctx = document.getElementById('stockChart').getContext('2d');
-    var stockChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: {{ product_names|safe }},
-            datasets: [{
-                label: 'Stock Levels',
-                data: {{ product_stock_levels|safe }},
-                backgroundColor: {{ stock_colors|safe }}
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
-            }
-        }
-    });
-</script>
-
