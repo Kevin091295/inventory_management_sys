@@ -8,6 +8,8 @@ from django.contrib.auth.decorators import login_required
 from .decorators import admin_required, auth_users, allowed_users, staff_or_admin
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
+import random
+import string
 
 
 @login_required(login_url='user-login')
@@ -47,8 +49,8 @@ def dashboard_index(request):
     return render(request, 'dashboard/index.html', context)
 
 
-# ------------------ PRODUCTS  ------------------  
 
+# ------------------ PRODUCTS  ------------------  
 @login_required(login_url="user-login")
 def products(request):
     products = Product.objects.all()  # Fetch all products
@@ -64,41 +66,79 @@ def add_product(request):
     if request.method == "POST":
         form = ProductForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Product added successfully!")
+            product = form.save(commit=False)
+            product.save()
+
+            # Create an initial stock transaction
+            if product.stock_level > 0:
+                # Instead of using StockTransaction.objects.create, use this:
+                transaction = StockTransaction(
+                    product=product,
+                    quantity=product.stock_level,
+                    transaction_type="ADD",
+                    performed_by=request.user,
+                    remarks=f"Transaction for product: {product.name}"
+                )
+                # Let the save method handle stock adjustment and reference number generation
+                transaction.save()
+
+
             return redirect("dashboard-products")
     else:
         form = ProductForm()
 
-    context = {
-        "form": form,
-    }
-    return render(request, "dashboard/add_product.html", context)
+    return render(request, "dashboard/add_product.html", {"form": form})
 
+
+
+@login_required(login_url="user-login")
 @admin_required
 def edit_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
+
     if request.method == "POST":
         form = ProductForm(request.POST, instance=product)
         if form.is_valid():
-            form.save()
-            return redirect("dashboard-products")  # Redirect to the product list page
+            new_product = form.save(commit=False)  # Save only the product data
+            old_stock_level = product.stock_level  # Original stock level
+            new_stock_level = new_product.stock_level  # New stock level
+
+            # Save product without adjusting stock
+            new_product.save()
+
+            # Create a stock transaction if stock level changes
+            stock_difference = new_stock_level - old_stock_level
+            if stock_difference != 0:
+                transaction_type = "ADD" if stock_difference > 0 else "REMOVE"
+                StockTransaction.objects.create(
+                    product=new_product,
+                    quantity=abs(stock_difference),
+                    transaction_type=transaction_type,
+                    performed_by=request.user,
+                    remarks="Stock level updated via product edit"
+                )
+
+            return redirect("dashboard-products")
     else:
         form = ProductForm(instance=product)
-    return render(
-        request, "dashboard/edit_product.html", {"form": form, "product": product}
-    )
 
+    return render(request, "dashboard/edit_product.html", {"form": form})
+
+
+@login_required
 @admin_required
 def delete_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
-    if request.method == "POST":  # Confirm delete
+    if request.method == 'POST':
         product.delete()
-        return redirect("dashboard-products")  # Redirect to the product list page
-    return render(request, "dashboard/confirm_delete.html", {"object": product})
+        messages.success(request, f'Product {product.name} deleted successfully.')
+        return redirect('dashboard-products')
+
+    return render(request, 'dashboard/confirm_delete.html', {'object': product})
 
 # ------------------ PRODUCTS  ------------------ 
 # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 
 # ------------------ STOCK TRANSACTION  ------------------ 
 

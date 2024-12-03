@@ -2,18 +2,14 @@ from django.db import models
 import random
 import string
 from django.contrib.auth.models import User
-import uuid
+
 
 class Product(models.Model):
-    name = models.CharField(max_length=100, null=True)
-    category = models.ForeignKey(
-        "Category", on_delete=models.CASCADE, null=True
-    )  # Link to Category
-    stock_level = models.PositiveIntegerField(default=0)  # New field
-    supplier = models.ForeignKey(
-        "Supplier", on_delete=models.CASCADE, null=True
-    )  # New field
-    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)  # New field
+    name = models.CharField(max_length=255)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE)
+    stock_level = models.PositiveIntegerField(default=0)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"{self.name}"
@@ -55,7 +51,6 @@ class StockTransaction(models.Model):
     def __str__(self):
         return f'{self.transaction_type} - {self.product.name} ({self.quantity}) by {self.performed_by.username if self.performed_by else "Unknown"}'
 
-
     def save(self, *args, **kwargs):
 
         if not self.reference_number:
@@ -68,12 +63,16 @@ class StockTransaction(models.Model):
                 random.choice(string.ascii_uppercase)                   # 1 alphabet
             )
 
-        if self.transaction_type == 'REMOVE':
-            if self.product.stock_level < self.quantity:
-                raise ValueError(f"Cannot remove {self.quantity} units. Only {self.product.stock_level} units available.")
-            self.product.stock_level -= self.quantity
-        elif self.transaction_type == 'ADD':
-            self.product.stock_level += self.quantity
+        # Adjust stock level only for new transactions
+        if not self.pk:  # Only adjust stock if this is a new transaction
+            if self.transaction_type == "ADD":
+                self.product.stock_level += self.quantity
+            elif self.transaction_type == "REMOVE":
+                if self.quantity > self.product.stock_level:
+                    raise ValueError(
+                        f"Cannot remove {self.quantity} units. Only {self.product.stock_level} units available."
+                    )
+                self.product.stock_level -= self.quantity
+            self.product.save()  # Save updated stock level
 
-        self.product.save()  # Save the updated stock level
         super().save(*args, **kwargs)
