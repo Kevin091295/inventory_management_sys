@@ -49,13 +49,13 @@ Ensure you have the following installed on your system:
 1. **Clone the repository**:
 
   ```bash
-  git clone https://github.com/jaydeepravaliya/inventory_management_system.git
+  git clone https://github.com/jaydeepravaliya/inventory_management_sys.git
   ```
 
 2. **Navigate to the project directory**:
 
   ```bash
-  cd inventory_management_system
+  cd inventory_management_sys
   ```
 
 3. **Set up a virtual environment (optional but recommended)**:
